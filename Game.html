@@ -80,18 +80,20 @@
         
         <!-- เนื้อหาเกมออกแบบเมือง -->
         <div id="game-content" class="p-4 md:p-8">
-            <!-- เปลี่ยนจาก md:flex-row เป็น flex-col -->
-            <div class="flex flex-col gap-8">
+            <!-- [EDIT] เปลี่ยนจาก flex-col เป็น md:flex-row -->
+            <div class="flex flex-col md:flex-row gap-8">
                 
                 <!-- ส่วนของแผนที่ (ย้ายมาไว้ข้างบน) -->
-                <div class="flex flex-col items-center w-full">
+                <!-- [EDIT] ปรับสัดส่วน md:w-3/5 -->
+                <div class="flex flex-col items-center w-full md:w-3/5">
                     <h3 class="text-xl font-semibold text-center mb-2">แผนผังเมือง Vectoria</h3>
-                    <!-- [EDIT] ขยายขนาด Canvas เป็น 900x500 -->
-                    <canvas id="canvas" width="900" height="500" class="border-2 border-gray-400 bg-slate-50 rounded-lg shadow-md"></canvas>
+                    <!-- [EDIT] ขยายขนาด Canvas เป็น 700x500 -->
+                    <canvas id="canvas" width="700" height="500" class="border-2 border-gray-400 bg-slate-50 rounded-lg shadow-md"></canvas>
                 </div>
 
                 <!-- ส่วนของโจทย์ (ย้ายมาไว้ข้างล่าง) -->
-                <div class="flex-1">
+                <!-- [EDIT] ปรับสัดส่วน md:w-2/5 และเพิ่ม md:max-h-[500px] md:overflow-y-auto -->
+                <div class="flex-1 md:w-2/5 md:max-h-[500px] md:overflow-y-auto md:pr-4">
                     
                     <!-- Progress Bar (ใหม่) -->
                     <div class="mb-6">
@@ -228,8 +230,8 @@
         document.addEventListener('DOMContentLoaded', () => {
             canvas = document.getElementById('canvas');
             ctx = canvas.getContext('2d');
-            // [EDIT] อัปเดต centerX, centerY ตามขนาด canvas ใหม่ (900x500)
-            centerX = canvas.width / 2; // 450
+            // [EDIT] อัปเดต centerX, centerY ตามขนาด canvas ใหม่ (700x500)
+            centerX = canvas.width / 2; // 350
             centerY = canvas.height / 2; // 250
             drawGrid(ctx, canvas.width, canvas.height, centerX, centerY, scale);
             plotPoint(ctx, 0, 0, 'gray', 'O', centerX, centerY);
