@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>เกมปริศนาเวกเตอร์</title>
+    <title>เกมออกแบบเมือง Vectoria</title>
     <!-- โหลด Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;700&display=swap" rel="stylesheet">
@@ -23,8 +23,8 @@
                 ready: () => {
                     MathJax.startup.defaultReady();
                     // Typeset หน้าที่แสดงผลครั้งแรก
-                    if (document.getElementById('game1')) {
-                        MathJax.typesetPromise([document.getElementById('game1')]);
+                    if (document.getElementById('game-content')) {
+                        MathJax.typesetPromise([document.getElementById('game-content')]);
                     }
                 }
             }
@@ -39,26 +39,17 @@
         body {
             font-family: 'Sarabun', sans-serif;
         }
-        /* ซ่อน/แสดงแท็บ */
-        .tab-content.hidden {
-            display: none;
-        }
-        /* สไตล์สำหรับแท็บที่ถูกเลือก */
-        .tab-button.active {
-            border-bottom-color: #3b82f6; /* blue-500 */
-            color: #3b82f6;
-            font-weight: 700;
-        }
+        
         /* สไตล์สำหรับ input */
         .game-input {
-            @apply border border-gray-300 rounded-md p-2 w-24 text-center transition-all duration-200;
+            @apply border border-gray-300 rounded-md p-2 text-center transition-all duration-200;
         }
         .game-input:focus {
-            @apply border-blue-500 ring-2 ring-blue-200 outline-none;
+            @apply border-indigo-500 ring-2 ring-indigo-200 outline-none;
         }
         /* สไตล์สำหรับปุ่ม */
         .game-button {
-            @apply bg-blue-500 text-white font-bold py-2 px-4 rounded-lg hover:bg-blue-600 transition-all duration-200;
+            @apply bg-indigo-600 text-white font-bold py-2 px-4 rounded-lg hover:bg-indigo-700 transition-all duration-200 shadow-md hover:shadow-lg transform hover:-translate-y-0.5;
         }
         /* สไตล์สำหรับข้อความ feedback */
         .feedback {
@@ -71,237 +62,183 @@
             color: #dc2626; /* red-600 */
         }
         .task-card {
-            @apply bg-gray-50 p-4 rounded-lg border border-gray-200 shadow-sm mb-3;
+            @apply bg-gray-50 p-4 rounded-lg border border-gray-200 shadow-sm mb-3 transition-all duration-200 hover:shadow-md hover:border-gray-300;
         }
         .task-card.completed {
             @apply bg-green-50 border-green-200;
         }
     </style>
 </head>
-<body class="bg-gray-100 min-h-screen p-4 md:p-8">
+<body class="bg-slate-100 min-h-screen p-4 md:p-8">
 
-    <div class="max-w-6xl mx-auto bg-white rounded-xl shadow-2xl overflow-hidden">
-        <header class="p-6 bg-gray-800 text-white">
-            <h1 class="text-3xl font-bold text-center">เกมปริศนาเวกเตอร์ (Vector Games)</h1>
-            <p class="text-center text-gray-300 mt-1">เลือกระหว่างเกมภารกิจกู้ภัย หรือ เกมออกแบบเมือง</p>
+    <!-- [EDIT] เปลี่ยน max-w-6xl เป็น max-w-7xl -->
+    <div class="max-w-7xl mx-auto bg-white rounded-xl shadow-2xl overflow-hidden">
+        <header class="p-6 bg-gradient-to-r from-indigo-600 to-purple-600 text-white">
+            <h1 class="text-3xl font-bold text-center">เกมออกแบบเมือง Vectoria</h1>
+            <p class="text-center text-gray-200 mt-1">จงวางผังเมืองและสร้างถนนโดยใช้ความรู้เรื่องเวกเตอร์!</p>
         </header>
+        
+        <!-- เนื้อหาเกมออกแบบเมือง -->
+        <div id="game-content" class="p-4 md:p-8">
+            <!-- เปลี่ยนจาก md:flex-row เป็น flex-col -->
+            <div class="flex flex-col gap-8">
+                
+                <!-- ส่วนของแผนที่ (ย้ายมาไว้ข้างบน) -->
+                <div class="flex flex-col items-center w-full">
+                    <h3 class="text-xl font-semibold text-center mb-2">แผนผังเมือง Vectoria</h3>
+                    <!-- [EDIT] ขยายขนาด Canvas เป็น 900x500 -->
+                    <canvas id="canvas" width="900" height="500" class="border-2 border-gray-400 bg-slate-50 rounded-lg shadow-md"></canvas>
+                </div>
 
-        <!-- แท็บสำหรับสลับเกม -->
-        <div class="flex border-b border-gray-200">
-            <button id="tab1" class="tab-button active flex-1 py-4 px-6 text-center text-gray-500 hover:bg-gray-50 transition-all duration-200" onclick="switchTab('game1', 'tab1')">
-                เกมที่ 1: ภารกิจกู้ภัย
-            </button>
-            <button id="tab2" class="tab-button flex-1 py-4 px-6 text-center text-gray-500 hover:bg-gray-50 transition-all duration-200" onclick="switchTab('game2', 'tab2')">
-                เกมที่ 2: ออกแบบเมือง Vectoria
-            </button>
-        </div>
-
-        <!-- เนื้อหาเกมที่ 1 -->
-        <div id="game1" class="tab-content p-4 md:p-8">
-            <div class="flex flex-col md:flex-row gap-6">
-                <!-- ส่วนของโจทย์ -->
+                <!-- ส่วนของโจทย์ (ย้ายมาไว้ข้างล่าง) -->
                 <div class="flex-1">
-                    <h2 class="text-2xl font-bold mb-4 text-blue-600">ภารกิจกู้ภัย</h2>
-                    <p class="mb-4 text-gray-700">คุณคือทีมกู้ภัยที่เริ่มต้นที่ค่ายหลัก (0, 0) จงทำตามคำใบ้ทีละขั้นตอนเพื่อค้นหาผู้รอดชีวิต!</p>
                     
-                    <div class="space-y-4">
-                        <!-- คำใบ้ที่ 1 -->
-                        <div id="prompt1-container" class="task-card">
-                            <p class="font-semibold">คำใบ้ที่ 1:</p>
-                            <p>เดินทางไปตามเวกเตอร์ $\vec{u} = 2\vec{i} + 3\vec{j}$ เพื่อไปยัง 'จุด A' (จุดพักแรก) จงหาพิกัดของจุด A</p>
-                            <div class="mt-2 flex items-center gap-2">
-                                ( <input type="number" id="q1-x" class="game-input" placeholder="X"> , 
-                                <input type="number" id="q1-y" class="game-input" placeholder="Y"> )
-                                <button class="game-button" onclick="checkAnswer1(1)">ตรวจสอบ</button>
-                            </div>
-                            <p id="feedback1" class="feedback"></p>
+                    <!-- Progress Bar (ใหม่) -->
+                    <div class="mb-6">
+                        <h3 class="text-sm font-semibold text-gray-600 mb-2">ความคืบหน้าภารกิจ</h3>
+                        <div class="w-full bg-gray-200 rounded-full h-4 overflow-hidden shadow-inner">
+                            <div id="progress-bar" class="h-4 bg-gradient-to-r from-green-400 to-blue-500 rounded-full transition-all duration-500" style="width: 0%"></div>
                         </div>
-
-                        <!-- คำใบ้ที่ 2 -->
-                        <div id="prompt2-container" class="task-card hidden">
-                            <p class="font-semibold">คำใบ้ที่ 2:</p>
-                            <p>ยอดเยี่ยม! ตอนนี้คุณอยู่ที่จุด A (2, 3) จากจุด A เดินทางต่อไปยัง 'จุด B' ด้วยเวกเตอร์ $\vec{v} = 4\vec{i} - 3\vec{j}$ จงหาพิกัดของจุด B</p>
-                            <div class="mt-2 flex items-center gap-2">
-                                ( <input type="number" id="q2-x" class="game-input" placeholder="X"> , 
-                                <input type="number" id="q2-y" class="game-input" placeholder="Y"> )
-                                <button class="game-button" onclick="checkAnswer1(2)">ตรวจสอบ</button>
-                            </div>
-                            <p id="feedback2" class="feedback"></p>
-                        </div>
-
-                        <!-- คำใบ้ที่ 3 -->
-                        <div id="prompt3-container" class="task-card hidden">
-                            <p class="font-semibold">คำใบ้ที่ 3:</p>
-                            <p>ถึงจุด B (6, 0) แล้ว! คุณต้องข้ามเหวที่กว้างเท่ากับ "ขนาด" ของเวกเตอร์การเดินทางจาก A ไป B (คือ $|\vec{v}|$) จงหาความกว้างของเหว</p>
-                            <div class="mt-2 flex items-center gap-2">
-                                <input type="number" id="q3-ans" class="game-input w-32" placeholder="ขนาด">
-                                <button class="game-button" onclick="checkAnswer1(3)">ตรวจสอบ</button>
-                            </div>
-                            <p id="feedback3" class="feedback"></p>
-                        </div>
-
-                        <!-- คำใบ้ที่ 4 -->
-                        <div id="prompt4-container" class="task-card hidden">
-                            <p class="font-semibold">คำใบ้ที่ 4:</p>
-                            <p>คุณข้ามเหวมาได้! ที่นี่มีป้ายบอกทางไปยัง 'จุด C' ซึ่งอยู่ห่างจากจุด B (6, 0) ไปในทิศทาง *ตรงกันข้าม* กับเวกเตอร์ $\vec{w} = -3\vec{i} + 4\vec{j}$ เป็นระยะทาง 10 หน่วย จงหาพิกัดของจุด C</p>
-                            <div class="mt-2 flex items-center gap-2">
-                                ( <input type="number" id="q4-x" class="game-input" placeholder="X"> , 
-                                <input type="number" id="q4-y" class="game-input" placeholder="Y"> )
-                                <button class="game-button" onclick="checkAnswer1(4)">ตรวจสอบ</button>
-                            </div>
-                            <p id="feedback4" class="feedback"></p>
-                        </div>
-
-                        <!-- คำใบ้ที่ 5 -->
-                        <div id="prompt5-container" class="task-card hidden">
-                            <p class="font-semibold">คำใบ้ที่ 5 (สุดท้าย):</p>
-                            <p>ใกล้แล้ว! ผู้รอดชีวิตอยู่ที่ 'จุด D' เรารู้แค่ว่าเวกเตอร์จากค่ายหลักไปยังจุด D ($\vec{OD}$) *ตั้งฉาก* กับเวกเตอร์ $\vec{v}$ (จากคำใบ้ที่ 2) และเรารู้ว่าพิกัด $x$ ของจุด D คือ 3 จงหาพิกัด $y$ ของจุด D (ตอบพิกัดเต็มของ D)</p>
-                            <div class="mt-2 flex items-center gap-2">
-                                ( <input type="number" id="q5-x" class="game-input" value="3" disabled> , 
-                                <input type="number" id="q5-y" class="game-input" placeholder="Y"> )
-                                <button class="game-button" onclick="checkAnswer1(5)">ตรวจสอบ</button>
-                            </div>
-                            <p id="feedback5" class="feedback"></p>
-                        </div>
-                         
-                         <p id="success-msg-1" class="hidden text-2xl font-bold text-center text-green-600 p-4 bg-green-100 rounded-lg">ยินดีด้วย! คุณพบผู้รอดชีวิตแล้ว!</p>
-
                     </div>
-                </div>
-                <!-- ส่วนของแผนที่ -->
-                <div class="flex-shrink-0">
-                    <h3 class="text-xl font-semibold text-center mb-2">แผนที่ภารกิจ</h3>
-                    <canvas id="canvas1" width="400" height="400" class="border-2 border-gray-400 bg-white rounded-lg shadow-md"></canvas>
-                </div>
-            </div>
-        </div>
 
-        <!-- เนื้อหาเกมที่ 2 -->
-        <div id="game2" class="tab-content hidden p-4 md:p-8">
-            <div class="flex flex-col md:flex-row gap-6">
-                <!-- ส่วนของโจทย์ -->
-                <div class="flex-1">
-                    <h2 class="text-2xl font-bold mb-4 text-indigo-600">ออกแบบเมือง Vectoria</h2>
-                    <p class="mb-4 text-gray-700">คุณคือผู้วางผังเมือง จงวางสิ่งก่อสร้างและตรวจสอบเงื่อนไขต่างๆ ให้ถูกต้อง (คุณสามารถทำภารกิจไม่เรียงลำดับได้ แต่บางภารกิจอาจต้องใช้ข้อมูลจากภารกิจก่อนหน้า)</p>
+                    <!-- เฟส 1: วางตำแหน่ง -->
+                    <h2 class="text-2xl font-bold mb-3 text-indigo-700 flex items-center gap-2">
+                        <!-- ไอคอน MapPin -->
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-map-pin"><path d="M20 10c0 6-8 12-8 12S4 16 4 10a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>
+                        เฟส 1: วางตำแหน่งสิ่งก่อสร้าง
+                    </h2>
+                    <p class="mb-4 text-gray-700">จงวางตำแหน่งสิ่งก่อสร้างหลัก 3 แห่งนี้ให้ถูกต้องก่อนเริ่มสร้างถนน</p>
                     
-                    <div class="space-y-3">
+                    <div class="space-y-3 mb-8">
                         <!-- ภารกิจ 1 -->
                         <div id="task1-card" class="task-card">
                             <p class="font-semibold">ภารกิจ 1: สร้าง 'ศาลากลาง' (H) ที่พิกัด (1, 2)</p>
-                            <div class="mt-2 flex items-center gap-2">
-                                ( <input type="number" id="t1-x" class="game-input" value="1"> , 
-                                <input type="number" id="t1-y" class="game-input" value="2"> )
-                                <button class="game-button" onclick="checkTask2(1)">สร้าง</button>
+                            <div class="mt-2 flex items-center gap-3">
+                                ( <input type="number" id="t1-x" class="game-input w-20" value="1"> , 
+                                <input type="number" id="t1-y" class="game-input w-20" value="2"> )
+                                <button class="game-button" onclick="checkTask(1)">สร้าง</button>
                             </div>
                             <p id="feedback-t1" class="feedback"></p>
                         </div>
 
                         <!-- ภารกิจ 2 -->
-                        <div id="task2-card" class="task-card">
+                        <div id="task2-card" class="task-card hidden"> <!-- [EDIT] เพิ่ม class hidden -->
                             <p class="font-semibold">ภารกิจ 2: สร้าง 'โรงเรียน' (S) โดยมีเวกเตอร์ตำแหน่ง $\vec{OS} = -3\vec{i} + 5\vec{j}$ จงระบุพิกัด</p>
-                            <div class="mt-2 flex items-center gap-2">
-                                ( <input type="number" id="t2-x" class="game-input" placeholder="X"> , 
-                                <input type="number" id="t2-y" class="game-input" placeholder="Y"> )
-                                <button class="game-button" onclick="checkTask2(2)">สร้าง</button>
+                            <div class="mt-2 flex items-center gap-3">
+                                ( <input type="number" id="t2-x" class="game-input w-20" placeholder="X"> , 
+                                <input type="number" id="t2-y" class="game-input w-20" placeholder="Y"> )
+                                <button class="game-button" onclick="checkTask(2)">สร้าง</button>
                             </div>
                             <p id="feedback-t2" class="feedback"></p>
                         </div>
 
-                        <!-- ภารกิจ 3 -->
-                        <div id="task3-card" class="task-card">
-                            <p class="font-semibold">ภารกิจ 3: สร้าง 'โรงพยาบาล' (P) โดยที่เวกเตอร์จากโรงเรียน (S) ไปยังโรงพยาบาล ( $\vec{SP}$ ) คือ $\vec{v} = 7\vec{i} - 2\vec{j}$ จงหาพิกัดของ P</p>
-                            <div class="mt-2 flex items-center gap-2">
-                                ( <input type="number" id="t3-x" class="game-input" placeholder="X"> , 
-                                <input type="number" id="t3-y" class="game-input" placeholder="Y"> )
-                                <button class="game-button" onclick="checkTask2(3)">สร้าง</button>
+                        <!-- ภารกิจ 3 (ปรับใหม่) -->
+                        <div id="task3-card" class="task-card hidden"> <!-- [EDIT] เพิ่ม class hidden -->
+                            <p class="font-semibold">ภารกิจ 3: สร้าง 'โรงพยาบาล' (P) โดยที่เวกเตอร์จากโรงเรียน (S) ไปยังโรงพยาบาล ( $\vec{SP}$ ) คือ $\vec{v} = 7\vec{i} + 1\vec{j}$ จงหาพิกัดของ P</p>
+                            <div class="mt-2 flex items-center gap-3">
+                                ( <input type="number" id="t3-x" class="game-input w-20" placeholder="X"> , 
+                                <input type="number" id="t3-y" class="game-input w-20" placeholder="Y"> )
+                                <button class="game-button" onclick="checkTask(3)">สร้าง</button>
                             </div>
                             <p id="feedback-t3" class="feedback"></p>
                         </div>
-                        
-                        <!-- ภารกิจ 4 -->
-                        <div id="task4-card" class="task-card">
-                            <p class="font-semibold">ภารกิจ 4: ถนนที่เชื่อมระหว่าง 'ศาลากลาง' (H) กับ 'โรงพยาบาล' (P) (คือ $\vec{HP}$) ขนานกับแนวสายเคเบิล $\vec{d} = 3\vec{i} + 1\vec{j}$ หรือไม่?</p>
-                            <div class="mt-2 flex items-center gap-2">
-                                <select id="t4-ans" class="game-input w-32">
-                                    <option value="">เลือกคำตอบ</option>
-                                    <option value="yes">ใช่ (ขนานกัน)</option>
-                                    <option value="no">ไม่ (ไม่ขนาน)</option>
-                                </select>
-                                <button class="game-button" onclick="checkTask2(4)">ตรวจสอบ</button>
+                    </div>
+
+                    <!-- เฟส 2: สร้างถนน -->
+                    <!-- [EDIT] เพิ่ม id และ class hidden -->
+                    <h2 id="phase2-heading" class="text-2xl font-bold mb-3 text-indigo-700 flex items-center gap-2 hidden">
+                        <!-- ไอคอน Road -->
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-road"><path d="M4 19.5v-15a2.5 2.5 0 0 1 2.5-2.5h11A2.5 2.5 0 0 1 20 4.5v15"/><path d="M12 10h.01"/><path d="M12 6h.01"/><path d="M12 14h.01"/><path d="M12 18h.01"/></svg>
+                        เฟส 2: สร้างถนนเชื่อมเมือง
+                    </h2>
+                    <!-- [EDIT] เพิ่ม id และ class hidden -->
+                    <p id="phase2-desc" class="mb-4 text-gray-700 hidden">เมื่อวางตำแหน่งเสร็จแล้ว มาเริ่มสร้างถนนกันต่อ!</p>
+                    
+                    <div class="space-y-3">
+                        <!-- ภารกิจ 4 (ใหม่) -->
+                        <div id="task4-card" class="task-card hidden"> <!-- [EDIT] เพิ่ม class hidden -->
+                            <p class="font-semibold">ภารกิจ 4: ถนนจากศาลากลาง (H) ไปโรงพยาบาล (P) อธิบายด้วยเวกเตอร์ $\vec{HP}$ จงหา $\vec{HP} = a\vec{i} + b\vec{j}$</p>
+                            <div class="mt-2 flex items-center gap-3">
+                                $a=$ <input type="number" id="t4-x" class="game-input w-20" placeholder="a"> , 
+                                $b=$ <input type="number" id="t4-y" class="game-input w-20" placeholder="b">
+                                <button class="game-button" onclick="checkTask(4)">ตรวจสอบ</button>
                             </div>
                             <p id="feedback-t4" class="feedback"></p>
                         </div>
                         
-                        <!-- ภารกิจ 5 -->
-                        <div id="task5-card" class="task-card">
-                            <p class="font-semibold">ภารกิจ 5: ถนน $\vec{HP}$ *ตั้งฉาก* กับแนวสายเคเบิล $\vec{d} = 3\vec{i} + 1\vec{j}$ หรือไม่?</p>
-                            <div class="mt-2 flex items-center gap-2">
-                                <select id="t5-ans" class="game-input w-32">
-                                    <option value="">เลือกคำตอบ</option>
-                                    <option value="yes">ใช่ (ตั้งฉาก)</option>
-                                    <option value="no">ไม่ (ไม่ตั้งฉาก)</option>
-                                </select>
-                                <button class="game-button" onclick="checkTask2(5)">ตรวจสอบ</button>
+                        <!-- ภารกิจ 5 (ใหม่) -->
+                        <div id="task5-card" class="task-card hidden"> <!-- [EDIT] เพิ่ม class hidden -->
+                            <p class="font-semibold">ภารกิจ 5: จงหาความยาวของถนน $\vec{HP}$ (หน่วย)</p>
+                            <div class="mt-2 flex items-center gap-3">
+                                <input type="number" id="t5-ans" class="game-input w-28" placeholder="ความยาว">
+                                <button class="game-button" onclick="checkTask(5)">ตรวจสอบ</button>
                             </div>
                             <p id="feedback-t5" class="feedback"></p>
                         </div>
 
-                        <!-- ภารกิจ 6 -->
-                        <div id="task6-card" class="task-card">
-                            <p class="font-semibold">ภารกิจ 6: จงหาพื้นที่ของ 'สวนสาธารณะ' รูปสามเหลี่ยม ที่มีมุมอยู่ที่ ศาลากลาง (H), โรงเรียน (S), และโรงพยาบาล (P)</p>
-                            <div class="mt-2 flex items-center gap-2">
-                                <input type="number" id="t6-ans" class="game-input w-32" placeholder="พื้นที่">
-                                <button class="game-button" onclick="checkTask2(6)">ตรวจสอบ</button>
+                        <!-- ภารกิจ 6 (ใหม่) -->
+                        <div id="task6-card" class="task-card hidden"> <!-- [EDIT] เพิ่ม class hidden -->
+                            <p class="font-semibold">ภารกิจ 6: ถนนจากโรงเรียน (S) ไปโรงพยาบาล (P) อธิบายด้วยเวกเตอร์ $\vec{SP}$ จงหา $\vec{SP} = a\vec{i} + b\vec{j}$</p>
+                            <div class="mt-2 flex items-center gap-3">
+                                $a=$ <input type="number" id="t6-x" class="game-input w-20" placeholder="a"> , 
+                                $b=$ <input type="number" id="t6-y" class="game-input w-20" placeholder="b">
+                                <button class="game-button" onclick="checkTask(6)">ตรวจสอบ</button>
                             </div>
                             <p id="feedback-t6" class="feedback"></p>
                         </div>
+
+                        <!-- ภารกิจ 7 (ใหม่) -->
+                        <div id="task7-card" class="task-card hidden"> <!-- [EDIT] เพิ่ม class hidden -->
+                            <p class="font-semibold">ภารกิจ 7: จงหาความยาวของถนน $\vec{SP}$ (ตอบทศนิยม 1 ตำแหน่ง)</p>
+                            <div class="mt-2 flex items-center gap-3">
+                                <input type="number" id="t7-ans" class="game-input w-28" placeholder="ความยาว">
+                                <button class="game-button" onclick="checkTask(7)">ตรวจสอบ</button>
+                            </div>
+                            <p id="feedback-t7" class="feedback"></p>
+                        </div>
+
+                        <!-- ภารกิจ 8 (ใหม่) -->
+                        <div id="task8-card" class="task-card hidden"> <!-- [EDIT] เพิ่ม class hidden -->
+                            <p class="font-semibold">ภารกิจ 8: สร้าง 'ตลาด' (M) ที่จุดกึ่งกลางถนนระหว่าง S และ P จงหาพิกัดของ M</p>
+                            <div class="mt-2 flex items-center gap-3">
+                                ( <input type="number" id="t8-x" class="game-input w-20" placeholder="X"> , 
+                                <input type="number" id="t8-y" class="game-input w-20" placeholder="Y"> )
+                                <button class="game-button" onclick="checkTask(8)">สร้าง</button>
+                            </div>
+                            <p id="feedback-t8" class="feedback"></p>
+                        </div>
                         
-                        <p id="success-msg-2" class="hidden text-2xl font-bold text-center text-indigo-600 p-4 bg-indigo-100 rounded-lg">ยินดีด้วย! คุณออกแบบเมืองเสร็จแล้ว!</p>
+                        <!-- ข้อความยินดี (ใหม่) -->
+                        <p id="success-msg" class="hidden text-2xl font-bold text-center text-green-800 p-6 bg-gradient-to-r from-green-100 to-lime-100 border-2 border-green-300 rounded-lg shadow-lg items-center justify-center gap-3">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-party-popper"><path d="M19 6.5c0 .28-.03.55-.08.83a.9.9 0 0 1-.4.55l-4.04 3.1a.9.9 0 0 0-.4.55c-.05.28-.08.55-.08.83c0 .28.03.55.08.83a.9.9 0 0 0 .4.55l4.04 3.1a.9.9 0 0 1 .4.55c.05.28.08.55.08.83c0 1.38-1.12 2.5-2.5 2.5s-2.5-1.12-2.5-2.5c0-.28.03-.55.08-.83a.9.9 0 0 0 .4-.55l4.04-3.1a.9.9 0 0 1-.4-.55c-.05-.28-.08-.55-.08-.83c0-.28.03-.55.08-.83a.9.9 0 0 1 .4-.55l-4.04-3.1a.9.9 0 0 0-.4-.55c-.05-.28-.08-.55-.08-.83C14 5.12 15.12 4 16.5 4s2.5 1.12 2.5 2.5Z"/><path d="m5.8 11.3 1.8-1.8"/><path d="M11.2 5.7 9.4 4"/><path d="m5.8 4 1.8 1.8"/><path d="M4 11.3l1.8-1.8"/><path d="m11.2 18.2 1.8 1.8"/><path d="m5.8 20 1.8-1.8"/><path d="m4 12.7 1.8 1.8"/><path d="M9.4 20l1.8-1.8"/></svg>
+                            ยินดีด้วย! คุณออกแบบเมืองเสร็จสมบูรณ์!
+                        </p>
                     </div>
-                </div>
-                <!-- ส่วนของแผนที่ -->
-                <div class="flex-shrink-0">
-                    <h3 class="text-xl font-semibold text-center mb-2">แผนผังเมือง Vectoria</h3>
-                    <canvas id="canvas2" width="400" height="400" class="border-2 border-gray-400 bg-white rounded-lg shadow-md"></canvas>
                 </div>
             </div>
         </div>
     </div>
-
-    <!-- โหลด MathJax สำหรับแสดงผลคณิตศาสตร์ -->
-    <!-- (ถูกย้ายไป <head> แล้ว) -->
     
     <script>
         // --- การตั้งค่าทั่วไป ---
-        let canvas1, ctx1, canvas2, ctx2;
+        let canvas, ctx;
         const scale = 20; // 20 pixels ต่อ 1 หน่วย
-        let centerX1, centerY1, centerX2, centerY2;
+        let centerX, centerY;
 
         document.addEventListener('DOMContentLoaded', () => {
-            // ตั้งค่า Canvas 1
-            canvas1 = document.getElementById('canvas1');
-            ctx1 = canvas1.getContext('2d');
-            centerX1 = canvas1.width / 2;
-            centerY1 = canvas1.height / 2;
-            drawGrid(ctx1, canvas1.width, canvas1.height, centerX1, centerY1, scale);
-            plotPoint(ctx1, 0, 0, 'blue', 'ค่าย', centerX1, centerY1); // <-- แก้ไขบรรทัดนี้
-
-            // ตั้งค่า Canvas 2
-            canvas2 = document.getElementById('canvas2');
-            ctx2 = canvas2.getContext('2d');
-            centerX2 = canvas2.width / 2;
-            centerY2 = canvas2.height / 2;
-            drawGrid(ctx2, canvas2.width, canvas2.height, centerX2, centerY2, scale);
-            plotPoint(ctx2, 0, 0, 'gray', 'O', centerX2, centerY2); // <-- และแก้ไขบรรทัดนี้
-            
-            // โหลด MathJax
-            // (ลบออกจากที่นี่ เพราะจัดการใน <head> แล้ว)
+            canvas = document.getElementById('canvas');
+            ctx = canvas.getContext('2d');
+            // [EDIT] อัปเดต centerX, centerY ตามขนาด canvas ใหม่ (900x500)
+            centerX = canvas.width / 2; // 450
+            centerY = canvas.height / 2; // 250
+            drawGrid(ctx, canvas.width, canvas.height, centerX, centerY, scale);
+            plotPoint(ctx, 0, 0, 'gray', 'O', centerX, centerY);
         });
 
         // --- ฟังก์ชันวาดแผนที่ (Grid) ---
         function drawGrid(ctx, w, h, centerX, centerY, gridScale) {
             ctx.clearRect(0, 0, w, h);
-            ctx.strokeStyle = '#e5e7eb'; // gray-200
+            ctx.strokeStyle = '#cbd5e1'; // สีเส้นตาราง (Slate-300)
             ctx.lineWidth = 0.5;
 
             // วาดเส้นตารางแนวตั้ง
@@ -332,7 +269,7 @@
             }
 
             // วาดแกน X และ Y
-            ctx.strokeStyle = '#9ca3af'; // gray-400
+            ctx.strokeStyle = '#64748b'; // สีแกน (Slate-500)
             ctx.lineWidth = 2;
             // แกน X
             ctx.beginPath();
@@ -376,7 +313,7 @@
             ctx.moveTo(startX, startY);
             ctx.lineTo(endX, endY);
             ctx.strokeStyle = color;
-            ctx.lineWidth = 2;
+            ctx.lineWidth = 2.5; // หนาขึ้นเล็กน้อย
             
             // วาดหัวลูกศร
             const headlen = 10;
@@ -388,130 +325,23 @@
             ctx.stroke();
         }
 
-        // --- ฟังก์ชันสลับแท็บ ---
-        function switchTab(gameId, tabId) {
-            // ซ่อนเนื้อหาทั้งหมด
-            document.getElementById('game1').classList.add('hidden');
-            document.getElementById('game2').classList.add('hidden');
-            // ลบ active class จากแท็บทั้งหมด
-            document.getElementById('tab1').classList.remove('active');
-            document.getElementById('tab2').classList.remove('active');
-            
-            // แสดงเนื้อหาและแท็บที่เลือก
-            document.getElementById(gameId).classList.remove('hidden');
-            document.getElementById(tabId).classList.add('active');
-
-            // สั่งให้ MathJax render แท็บที่เพิ่งเปิดใหม่
-            if (typeof MathJax !== 'undefined' && MathJax.typesetPromise) {
-                MathJax.typesetPromise([document.getElementById(gameId)]);
-            }
-        }
-
-        // --- ลอจิกเกมที่ 1 ---
-        let currentQuestion1 = 1;
-        let pointA = {}, pointB = {}, pointC = {}, pointD = {};
-        
-        function checkAnswer1(questionNum) {
-            if (questionNum !== currentQuestion1) return;
-
-            let x, y, ans;
-            const feedbackEl = document.getElementById(`feedback${questionNum}`);
-            let isCorrect = false;
-
-            try {
-                switch (questionNum) {
-                    case 1:
-                        x = parseFloat(document.getElementById('q1-x').value);
-                        y = parseFloat(document.getElementById('q1-y').value);
-                        if (x === 2 && y === 3) {
-                            isCorrect = true;
-                            pointA = {x: 2, y: 3};
-                            plotPoint(ctx1, 2, 3, '#ef4444', 'A', centerX1, centerY1); // red-500
-                            drawVector(ctx1, 0, 0, 2, 3, '#f87171', centerX1, centerY1);
-                        }
-                        break;
-                    case 2:
-                        x = parseFloat(document.getElementById('q2-x').value);
-                        y = parseFloat(document.getElementById('q2-y').value);
-                        // B = A + v = (2+4, 3-3) = (6, 0)
-                        if (x === 6 && y === 0) {
-                            isCorrect = true;
-                            pointB = {x: 6, y: 0};
-                            plotPoint(ctx1, 6, 0, '#ef4444', 'B', centerX1, centerY1);
-                            drawVector(ctx1, pointA.x, pointA.y, 6, 0, '#f87171', centerX1, centerY1);
-                        }
-                        break;
-                    case 3:
-                        ans = parseFloat(document.getElementById('q3-ans').value);
-                        // |v| = sqrt(4^2 + (-3)^2) = sqrt(16 + 9) = sqrt(25) = 5
-                        if (ans === 5) {
-                            isCorrect = true;
-                        }
-                        break;
-                    case 4:
-                        x = parseFloat(document.getElementById('q4-x').value);
-                        y = parseFloat(document.getElementById('q4-y').value);
-                        // |w| = sqrt((-3)^2 + 4^2) = 5
-                        // unit_w = (-3/5, 4/5)
-                        // opposite direction, 10 units: 10 * -unit_w = 10 * (3/5, -4/5) = (6, -8)
-                        // C = B + (6, -8) = (6+6, 0-8) = (12, -8)
-                        if (x === 12 && y === -8) {
-                            isCorrect = true;
-                            pointC = {x: 12, y: -8};
-                            plotPoint(ctx1, 12, -8, '#ef4444', 'C', centerX1, centerY1);
-                            drawVector(ctx1, pointB.x, pointB.y, 12, -8, '#f87171', centerX1, centerY1);
-                        }
-                        break;
-                    case 5:
-                        x = 3;
-                        y = parseFloat(document.getElementById('q5-y').value);
-                        // v = (4, -3)
-                        // OD = (3, y)
-                        // OD . v = 0 => (3)(4) + (y)(-3) = 0 => 12 - 3y = 0 => 3y = 12 => y = 4
-                        if (y === 4) {
-                            isCorrect = true;
-                            pointD = {x: 3, y: 4};
-                            plotPoint(ctx1, 3, 4, '#16a34a', 'D (ผู้รอดชีวิต)', centerX1, centerY1); // green-600
-                            document.getElementById('success-msg-1').classList.remove('hidden');
-                        }
-                        break;
-                }
-            } catch (e) {
-                isCorrect = false;
-            }
-
-            if (isCorrect) {
-                feedbackEl.textContent = 'ถูกต้อง!';
-                feedbackEl.className = 'feedback correct';
-                document.getElementById(`prompt${questionNum}-container`).classList.add('completed');
-                
-                // เลื่อนไปยังคำใบ้ถัดไป
-                currentQuestion1++;
-                if (currentQuestion1 <= 5) {
-                    document.getElementById(`prompt${currentQuestion1}-container`).classList.remove('hidden');
-                    // โหลด MathJax สำหรับโจทย์ข้อใหม่
-                    if (typeof MathJax !== 'undefined') {
-                        MathJax.typesetPromise([`prompt${currentQuestion1}-container`]);
-                    }
-                }
-            } else {
-                feedbackEl.textContent = 'ผิดพลาด! ลองอีกครั้ง';
-                feedbackEl.className = 'feedback incorrect';
-            }
-        }
-        
-        // --- ลอจิกเกมที่ 2 ---
-        let game2State = {
+        // --- ลอจิกเกม ---
+        let gameState = {
             locations: {},
             tasksCompleted: 0
         };
 
-        function checkTask2(taskNum) {
+        function checkTask(taskNum) {
             const feedbackEl = document.getElementById(`feedback-t${taskNum}`);
             const cardEl = document.getElementById(`task${taskNum}-card`);
             let isCorrect = false;
             let x, y, ans;
             
+            // ตรวจสอบว่ามีจุดที่จำเป็นหรือยัง
+            const H = gameState.locations['H'];
+            const S = gameState.locations['S'];
+            const P = gameState.locations['P'];
+
             try {
                 switch (taskNum) {
                     case 1:
@@ -519,8 +349,8 @@
                         y = parseFloat(document.getElementById('t1-y').value);
                         if (x === 1 && y === 2) {
                             isCorrect = true;
-                            game2State.locations['H'] = {x: 1, y: 2};
-                            plotPoint(ctx2, 1, 2, '#3b82f6', 'H (ศาลากลาง)', centerX2, centerY2);
+                            gameState.locations['H'] = {x: 1, y: 2};
+                            plotPoint(ctx, 1, 2, '#3b82f6', 'H (ศาลากลาง)', centerX, centerY);
                         }
                         break;
                     case 2:
@@ -528,78 +358,91 @@
                         y = parseFloat(document.getElementById('t2-y').value);
                         if (x === -3 && y === 5) {
                             isCorrect = true;
-                            game2State.locations['S'] = {x: -3, y: 5};
-                            plotPoint(ctx2, -3, 5, '#10b981', 'S (โรงเรียน)', centerX2, centerY2);
+                            gameState.locations['S'] = {x: -3, y: 5};
+                            plotPoint(ctx, -3, 5, '#10b981', 'S (โรงเรียน)', centerX, centerY);
                         }
                         break;
-                    case 3:
-                        if (!game2State.locations['S']) {
+                    case 3: // พิกัด P (คำนวณจาก S + v)
+                        if (!S) {
                             feedbackEl.textContent = 'ต้องสร้างโรงเรียน (ภารกิจ 2) ก่อน!';
                             feedbackEl.className = 'feedback incorrect';
                             return;
                         }
                         x = parseFloat(document.getElementById('t3-x').value);
                         y = parseFloat(document.getElementById('t3-y').value);
-                        // P = S + v = (-3+7, 5-2) = (4, 3)
-                        if (x === 4 && y === 3) {
+                        // P = S + v = (-3+7, 5+1) = (4, 6)
+                        if (x === 4 && y === 6) {
                             isCorrect = true;
-                            game2State.locations['P'] = {x: 4, y: 3};
-                            plotPoint(ctx2, 4, 3, '#ef4444', 'P (โรงพยาบาล)', centerX2, centerY2);
+                            gameState.locations['P'] = {x: 4, y: 6};
+                            plotPoint(ctx, 4, 6, '#ef4444', 'P (โรงพยาบาล)', centerX, centerY);
                         }
                         break;
-                    case 4:
-                        if (!game2State.locations['H'] || !game2State.locations['P']) {
+                    case 4: // เวกเตอร์ HP
+                        if (!H || !P) {
                             feedbackEl.textContent = 'ต้องสร้าง H และ P (ภารกิจ 1, 3) ก่อน!';
                             feedbackEl.className = 'feedback incorrect';
                             return;
                         }
-                        ans = document.getElementById('t4-ans').value;
-                        // HP = P - H = (4-1, 3-2) = (3, 1)
-                        // d = (3, 1)
-                        // HP = k*d ? (3, 1) = k(3, 1) => k=1. ใช่, ขนานกัน
-                        // *** ผมขอเปลี่ยนโจทย์ในโค้ดเล็กน้อยเพื่อให้คำตอบเป็น "ไม่" เพื่อให้ข้อ 4 กับ 5 น่าสนใจขึ้น
-                        // ให้ d = (2, 1) ตามไอเดียเดิม
-                        // HP = (3, 1). d = (2, 1). 
-                        // (3,1) = k(2,1)? 3=2k และ 1=k. ไม่จริง
-                        // ดังนั้นคำตอบที่ถูกคือ "no"
-                        // ** แก้โจทย์ใน HTML ให้ d = (2, 1) ... อ๊ะ ผมแก้โจทย์ใน HTML เป็น (3, 1) ไปแล้ว งั้นเอางี้
-                        // ** โจทย์ใน HTML คือ d = (3, 1)
-                        // ** HP = (3, 1)
-                        // ** คำตอบที่ถูกคือ "yes" (ใช่)
-                        if (ans === 'yes') { 
+                        x = parseFloat(document.getElementById('t4-x').value); // a
+                        y = parseFloat(document.getElementById('t4-y').value); // b
+                        // HP = P - H = (4-1, 6-2) = (3, 4)
+                        if (x === 3 && y === 4) { 
                             isCorrect = true;
-                            drawVector(ctx2, 1, 2, 4, 3, '#a855f7', centerX2, centerY2); // purple-500
+                            drawVector(ctx, 1, 2, 4, 6, '#a855f7', centerX, centerY); // วาดถนน HP (สีม่วง)
                         }
                         break;
-                    case 5:
-                         if (!game2State.locations['H'] || !game2State.locations['P']) {
+                    case 5: // ความยาว |HP|
+                         if (!H || !P) {
                             feedbackEl.textContent = 'ต้องสร้าง H และ P (ภารกิจ 1, 3) ก่อน!';
                             feedbackEl.className = 'feedback incorrect';
                             return;
                         }
-                        ans = document.getElementById('t5-ans').value;
-                        // HP = (3, 1)
-                        // d = (3, 1)
-                        // HP . d = (3)(3) + (1)(1) = 9 + 1 = 10
-                        // 10 != 0 ดังนั้น "ไม่" ตั้งฉาก
-                        if (ans === 'no') {
+                        ans = parseFloat(document.getElementById('t5-ans').value);
+                        // |HP| = sqrt(3^2 + 4^2) = sqrt(9 + 16) = sqrt(25) = 5
+                        if (ans === 5) {
                             isCorrect = true;
                         }
                         break;
-                    case 6:
-                        if (!game2State.locations['H'] || !game2State.locations['S'] || !game2State.locations['P']) {
-                            feedbackEl.textContent = 'ต้องสร้าง H, S, และ P (ภารกิจ 1, 2, 3) ก่อน!';
+                    case 6: // เวกเตอร์ SP
+                        if (!S || !P) {
+                            feedbackEl.textContent = 'ต้องสร้าง S และ P (ภารกิจ 2, 3) ก่อน!';
                             feedbackEl.className = 'feedback incorrect';
                             return;
                         }
-                        ans = parseFloat(document.getElementById('t6-ans').value);
-                        // H(1,2), S(-3,5), P(4,3)
-                        // v1 = HS = S - H = (-3-1, 5-2) = (-4, 3)
-                        // v2 = HP = P - H = (4-1, 3-2) = (3, 1)
-                        // Area = 0.5 * |x1*y2 - x2*y1|
-                        // Area = 0.5 * |(-4)(1) - (3)(3)| = 0.5 * |-4 - 9| = 0.5 * |-13| = 6.5
-                        if (ans === 6.5) {
+                        x = parseFloat(document.getElementById('t6-x').value); // a
+                        y = parseFloat(document.getElementById('t6-y').value); // b
+                        // SP = P - S = (4 - (-3), 6 - 5) = (7, 1)
+                        if (x === 7 && y === 1) { 
                             isCorrect = true;
+                             drawVector(ctx, -3, 5, 4, 6, '#e11d48', centerX, centerY); // วาดถนน SP (สีชมพู)
+                        }
+                        break;
+                    case 7: // ความยาว |SP|
+                        if (!S || !P) {
+                            feedbackEl.textContent = 'ต้องสร้าง S และ P (ภารกิจ 2, 3) ก่อน!';
+                            feedbackEl.className = 'feedback incorrect';
+                            return;
+                        }
+                        ans = parseFloat(document.getElementById('t7-ans').value);
+                        // |SP| = sqrt(7^2 + 1^2) = sqrt(49 + 1) = sqrt(50) = 7.07...
+                        if (ans === 7.1) {
+                            isCorrect = true;
+                        }
+                        break;
+                    case 8: // จุดกึ่งกลาง M
+                        if (!S || !P) {
+                            feedbackEl.textContent = 'ต้องสร้าง S และ P (ภารกิจ 2, 3) ก่อน!';
+                            feedbackEl.className = 'feedback incorrect';
+                            return;
+                        }
+                        x = parseFloat(document.getElementById('t8-x').value);
+                        y = parseFloat(document.getElementById('t8-y').value);
+                        // M = S + 0.5*SP = (-3, 5) + 0.5*(7, 1) = (-3, 5) + (3.5, 0.5) = (0.5, 5.5)
+                        // หรือ M = (S+P)/2 = ((-3+4)/2, (5+6)/2) = (1/2, 11/2) = (0.5, 5.5)
+                        if (x === 0.5 && y === 5.5) {
+                            isCorrect = true;
+                            gameState.locations['M'] = {x: 0.5, y: 5.5};
+                            plotPoint(ctx, 0.5, 5.5, '#f97316', 'M (ตลาด)', centerX, centerY);
                         }
                         break;
                 }
@@ -610,14 +453,61 @@
             if (isCorrect) {
                 feedbackEl.textContent = 'ภารกิจสำเร็จ!';
                 feedbackEl.className = 'feedback correct';
+
+                // --- [NEW] Logic to show the next task ---
+                // (ใช้ ?. (optional chaining) เพื่อป้องกัน error หาก element ไม่มี)
+                switch (taskNum) {
+                    case 1:
+                        document.getElementById('task2-card')?.classList.remove('hidden');
+                        break;
+                    case 2:
+                        document.getElementById('task3-card')?.classList.remove('hidden');
+                        break;
+                    case 3:
+                        // จบเฟส 1, แสดงหัวข้อเฟส 2 และภารกิจ 4
+                        document.getElementById('phase2-heading')?.classList.remove('hidden');
+                        document.getElementById('phase2-desc')?.classList.remove('hidden');
+                        document.getElementById('task4-card')?.classList.remove('hidden');
+                        break;
+                    case 4:
+                        document.getElementById('task5-card')?.classList.remove('hidden');
+                        break;
+                    case 5:
+                        document.getElementById('task6-card')?.classList.remove('hidden');
+                        break;
+                    case 6:
+                        document.getElementById('task7-card')?.classList.remove('hidden');
+                        break;
+                    case 7:
+                        document.getElementById('task8-card')?.classList.remove('hidden');
+                        break;
+                    case 8:
+                        // ภารกิจสุดท้าย, ไม่ต้องแสดงอะไรเพิ่ม (ข้อความยินดีจะแสดงด้านล่าง)
+                        break;
+                }
+                // --- [END NEW] ---
+
                 if (!cardEl.classList.contains('completed')) {
                     cardEl.classList.add('completed');
-                    game2State.tasksCompleted++;
+                    gameState.tasksCompleted++;
+                    
+                    // --- อัปเดต Progress Bar ---
+                    const totalTasks = 8;
+                    const percentage = (gameState.tasksCompleted / totalTasks) * 100;
+                    const progressBar = document.getElementById('progress-bar');
+                    if (progressBar) {
+                        progressBar.style.width = percentage + '%';
+                    }
+                    // --- จบการอัปเดต ---
                 }
                 
                 // ตรวจสอบว่าจบเกมหรือยัง
-                if (game2State.tasksCompleted === 6) {
-                    document.getElementById('success-msg-2').classList.remove('hidden');
+                if (gameState.tasksCompleted === 8) { // อัปเดตจำนวนภารกิจทั้งหมด
+                    const successMsg = document.getElementById('success-msg');
+                    if(successMsg) {
+                        successMsg.classList.remove('hidden');
+                        successMsg.classList.add('flex'); // เพิ่ม flex เพื่อจัดไอคอน
+                    }
                 }
             } else {
                  if (feedbackEl.textContent === '') { // ป้องกันการเขียนทับ error message ที่เจาะจง
